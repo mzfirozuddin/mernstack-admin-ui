@@ -38,6 +38,15 @@ const LoginPage = () => {
     enabled: false,
   });
 
+  const { mutate: logoutMutate } = useMutation({
+    mutationKey: ["logout"],
+    mutationFn: logout, //- logout from backend
+    onSuccess: async () => {
+      logoutFromStore(); //- logout from store
+      return;
+    },
+  });
+
   const { mutate, isPending, isError, error } = useMutation({
     mutationKey: ["login"],
     mutationFn: loginUser,
@@ -62,8 +71,7 @@ const LoginPage = () => {
       //! OR
       //* Custom hook (Optimised way)
       if (!isAllowed(selfDataPromise.data)) {
-        await logout(); //- logout from backend
-        logoutFromStore();
+        logoutMutate();
         return;
       }
 
