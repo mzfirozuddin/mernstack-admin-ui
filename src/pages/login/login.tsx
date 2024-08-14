@@ -13,8 +13,9 @@ import { LockFilled, LockOutlined, UserOutlined } from "@ant-design/icons";
 import Logo from "../../components/icons/Logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Credentials } from "../../types";
-import { login, self } from "../../http/api";
+import { login, self, logout } from "../../http/api";
 import { useAuthStore } from "../../store";
+import { usePermission } from "../../hooks/usePermission";
 
 const loginUser = async (userData: Credentials) => {
   //: server call logic
@@ -29,8 +30,9 @@ const getSelf = async () => {
 };
 
 const LoginPage = () => {
-  const { setUser } = useAuthStore();
-  const { data: selfData, refetch } = useQuery({
+  const { setUser, logout: logoutFromStore } = useAuthStore();
+  const { isAllowed } = usePermission();
+  const { refetch } = useQuery({
     queryKey: ["self"],
     queryFn: getSelf,
     enabled: false,
@@ -46,8 +48,26 @@ const LoginPage = () => {
       // setUser(data);
 
       const selfDataPromise = await refetch();
+      // console.log("User Data: ", selfDataPromise.data);
+
+      //: if role is customer then logout or redirect to client ui
+      //: for client ui : window.location.href = "http://client/url"
+      /*  
+     if (selfDataPromise.data.role == "customer") {
+        await logout(); //- logout from backend
+        logoutFromStore();
+        return;
+      } 
+      */
+      //! OR
+      //* Custom hook (Optimised way)
+      if (!isAllowed(selfDataPromise.data)) {
+        await logout(); //- logout from backend
+        logoutFromStore();
+        return;
+      }
+
       setUser(selfDataPromise.data);
-      console.log("User Data: ", selfDataPromise.data);
     },
   });
 
