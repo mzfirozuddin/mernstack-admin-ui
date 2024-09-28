@@ -23,33 +23,61 @@ import { logout } from "../http/api";
 
 const { Sider, Header, Content, Footer } = Layout;
 
-const items = [
-  {
-    key: "/",
-    icon: <Icon component={Home} />,
-    label: <NavLink to="/">Home</NavLink>,
-  },
-  {
-    key: "/users",
-    icon: <Icon component={UserIcon} />,
-    label: <NavLink to="/users">Users</NavLink>,
-  },
-  {
-    key: "/restaurants",
-    icon: <Icon component={FoodIcon} />,
-    label: <NavLink to="/restaurants">Restaurants</NavLink>,
-  },
-  {
-    key: "/products",
-    icon: <Icon component={BasketIcon} />,
-    label: <NavLink to="/products">Products</NavLink>,
-  },
-  {
-    key: "/promos",
-    icon: <Icon component={GiftIcon} />,
-    label: <NavLink to="/promos">Promos</NavLink>,
-  },
-];
+const getMenuItems = (role: string) => {
+  const baseItems = [
+    {
+      key: "/",
+      icon: <Icon component={Home} />,
+      label: <NavLink to="/">Home</NavLink>,
+      priority: 0,
+    },
+    {
+      key: "/restaurants",
+      icon: <Icon component={FoodIcon} />,
+      label: <NavLink to="/restaurants">Restaurants</NavLink>,
+      priority: 2,
+    },
+    {
+      key: "/products",
+      icon: <Icon component={BasketIcon} />,
+      label: <NavLink to="/products">Products</NavLink>,
+      priority: 3,
+    },
+    {
+      key: "/promos",
+      icon: <Icon component={GiftIcon} />,
+      label: <NavLink to="/promos">Promos</NavLink>,
+      priority: 4,
+    },
+  ];
+
+  //: Hiding the user routes for other user like customer and manager
+  if (role === "admin") {
+    /* return [
+      ...baseItems,
+      {
+        key: "/users",
+        icon: <Icon component={UserIcon} />,
+        label: <NavLink to="/users">Users</NavLink>,
+        priority: 1,
+      },
+    ]; */
+
+    //: If we want to maintain the order
+    const menus = [...baseItems];
+    menus.splice(1, 0, {
+      key: "/users",
+      icon: <Icon component={UserIcon} />,
+      label: <NavLink to="/users">Users</NavLink>,
+      priority: 1,
+    });
+
+    return menus;
+  }
+
+  // return baseItems.sort((a, b) => a.priority - b.priority); //! This process not working properly
+  return baseItems;
+};
 
 const Dashboard = () => {
   const { logout: logoutFromStore } = useAuthStore();
@@ -73,6 +101,9 @@ const Dashboard = () => {
   if (user === null) {
     return <Navigate to="/auth/login" replace={true} />;
   }
+
+  const items = getMenuItems(user.role); //: this function for manupulate the manu items
+  // console.log(items);
 
   return (
     <div>
