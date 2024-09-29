@@ -80,7 +80,7 @@ const Users = () => {
           }}
         />
 
-        <Table columns={columns} dataSource={users} />
+        <Table columns={columns} dataSource={users} rowKey={"id"} />
       </Space>
 
       {/* {users && (
