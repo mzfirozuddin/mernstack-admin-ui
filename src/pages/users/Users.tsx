@@ -74,7 +74,11 @@ const Users = () => {
         {isLoading && <div>Loading...</div>}
         {isError && <div>{error.message}</div>}
 
-        <UserFilter />
+        <UserFilter
+          onFilterChange={(filterName: string, filterValue: string) => {
+            console.log(filterName, filterValue);
+          }}
+        />
 
         <Table columns={columns} dataSource={users} />
       </Space>
