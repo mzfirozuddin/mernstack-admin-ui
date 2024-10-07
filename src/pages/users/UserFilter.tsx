@@ -1,11 +1,11 @@
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Input, Row, Select } from "antd";
+import { Card, Col, Input, Row, Select } from "antd";
 
 type UserFilterProps = {
+  children?: React.ReactNode;
   onFilterChange: (filterName: string, filterValue: string) => void;
 };
 
-const UserFilter = ({ onFilterChange }: UserFilterProps) => {
+const UserFilter = ({ onFilterChange, children }: UserFilterProps) => {
   return (
     <Card>
       <Row justify="space-between">
@@ -55,9 +55,8 @@ const UserFilter = ({ onFilterChange }: UserFilterProps) => {
             paddingRight: "30px",
           }}
         >
-          <Button type="primary" icon={<PlusOutlined />}>
-            Add User
-          </Button>
+          {/* Here we pass component as children from another component */}
+          {children}
         </Col>
       </Row>
     </Card>
