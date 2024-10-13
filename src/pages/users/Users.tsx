@@ -10,7 +10,7 @@ import { useState } from "react";
 
 const columns = [
   {
-    title: "First Name",
+    title: "Name",
     dataIndex: "firstName",
     key: "firstName",
     render: (_text: string, record: User) => {

@@ -97,6 +97,7 @@ const Dashboard = () => {
     token: { colorBgContainer },
   } = theme.useToken();
 
+  //: If user not login then redirect to login page
   const { user } = useAuthStore();
   if (user === null) {
     return <Navigate to="/auth/login" replace={true} />;
