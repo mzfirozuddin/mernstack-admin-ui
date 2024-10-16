@@ -24,6 +24,9 @@ const UserForm = () => {
                   label="First name"
                   name="firstName"
                   style={{ fontWeight: "500" }}
+                  rules={[
+                    { required: true, message: "First name is required!" },
+                  ]}
                 >
                   <Input size="large" />
                 </Form.Item>
@@ -33,6 +36,9 @@ const UserForm = () => {
                   label="Last name"
                   name="lastName"
                   style={{ fontWeight: "500" }}
+                  rules={[
+                    { required: true, message: "Last name is required!" },
+                  ]}
                 >
                   <Input size="large" />
                 </Form.Item>
@@ -42,6 +48,10 @@ const UserForm = () => {
                   label="Email"
                   name="email"
                   style={{ fontWeight: "500" }}
+                  rules={[
+                    { required: true, message: "Email is required!" },
+                    { type: "email", message: "Email is not valid!" },
+                  ]}
                 >
                   <Input size="large" />
                 </Form.Item>
@@ -56,6 +66,7 @@ const UserForm = () => {
                   label="Password"
                   name="password"
                   style={{ fontWeight: "500" }}
+                  rules={[{ required: true, message: "Password is required!" }]}
                 >
                   <Input size="large" type="password" />
                 </Form.Item>
@@ -79,6 +90,7 @@ const UserForm = () => {
                   label="Role"
                   name="role"
                   style={{ fontWeight: "500" }}
+                  rules={[{ required: true, message: "Role is required!" }]}
                 >
                   <Select
                     size="large"
