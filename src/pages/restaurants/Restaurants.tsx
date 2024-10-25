@@ -1,10 +1,11 @@
 import { PlusOutlined, RightOutlined } from "@ant-design/icons";
-import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
+import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { Link } from "react-router-dom";
 import RestaurantsFilter from "./RestaurantsFilter";
 import { useQuery } from "@tanstack/react-query";
 import { getRestaurants } from "../../http/api";
 import { useState } from "react";
+import TenantForm from "./forms/TenantForm";
 
 const columns = [
   {
@@ -63,6 +64,10 @@ const Restaurants = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
+    token: { colorBgLayout },
+  } = theme.useToken();
+
+  const {
     data: restaurants, //: Alise name
     isLoading,
     isError,
@@ -106,8 +111,9 @@ const Restaurants = () => {
         <Table columns={columns} dataSource={restaurants} rowKey={"id"} />
 
         <Drawer
-          title="Create User"
-          width={720}
+          title="Create Tenant"
+          width={550}
+          styles={{ body: { backgroundColor: colorBgLayout } }}
           destroyOnClose={true}
           open={drawerOpen}
           onClose={() => {
@@ -120,7 +126,9 @@ const Restaurants = () => {
             </Space>
           }
         >
-          <p>Hello.........</p>
+          <Form layout="horizontal">
+            <TenantForm />
+          </Form>
         </Drawer>
       </Space>
     </>
