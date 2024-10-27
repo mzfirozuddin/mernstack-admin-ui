@@ -2,10 +2,11 @@ import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { Link } from "react-router-dom";
 import RestaurantsFilter from "./RestaurantsFilter";
-import { useQuery } from "@tanstack/react-query";
-import { getRestaurants } from "../../http/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createTenant, getRestaurants } from "../../http/api";
 import { useState } from "react";
 import TenantForm from "./forms/TenantForm";
+import { Tenant } from "../../types";
 
 const columns = [
   {
@@ -61,6 +62,8 @@ const columns = [
 ];
 
 const Restaurants = () => {
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
@@ -78,6 +81,23 @@ const Restaurants = () => {
       return getRestaurants().then((res) => res.data);
     },
   });
+
+  //: Create tenant mutate
+  const { mutate: tenantMutate } = useMutation({
+    mutationKey: ["tenant"],
+    mutationFn: (data: Tenant) => createTenant(data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+    },
+  });
+
+  const onHandleSubmit = async () => {
+    await form.validateFields();
+    await tenantMutate(form.getFieldsValue());
+    // console.log(form.getFieldsValue());
+    form.resetFields();
+    setDrawerOpen(false);
+  };
 
   return (
     <>
@@ -117,16 +137,26 @@ const Restaurants = () => {
           destroyOnClose={true}
           open={drawerOpen}
           onClose={() => {
+            form.resetFields();
             setDrawerOpen(false);
           }}
           extra={
             <Space>
-              <Button>Cancel</Button>
-              <Button type="primary">Submit</Button>
+              <Button
+                onClick={() => {
+                  form.resetFields();
+                  setDrawerOpen(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="primary" onClick={onHandleSubmit}>
+                Submit
+              </Button>
             </Space>
           }
         >
-          <Form layout="horizontal">
+          <Form layout="horizontal" form={form}>
             <TenantForm />
           </Form>
         </Drawer>

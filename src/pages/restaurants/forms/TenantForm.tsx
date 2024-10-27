@@ -5,7 +5,11 @@ const TenantForm = () => {
     <div>
       <Row>
         <Col span={24}>
-          <Space direction="vertical" size="large">
+          <Space
+            direction="vertical"
+            size="large"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
             <Card title="Tenant info" bordered={false}>
               <Row gutter={20}>
                 <Col span={24} style={{ height: "100px" }}>
