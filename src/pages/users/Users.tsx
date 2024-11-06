@@ -17,8 +17,14 @@ import { useAuthStore } from "../../store";
 import UserFilter from "./UserFilter";
 import { useState } from "react";
 import UserForm from "./forms/UserForm";
+import { PER_PAGE } from "../../constants";
 
 const columns = [
+  {
+    title: "Id",
+    dataIndex: "id",
+    key: "id",
+  },
   {
     title: "Name",
     dataIndex: "firstName",
@@ -63,6 +69,11 @@ const Users = () => {
     token: { colorBgLayout },
   } = theme.useToken();
 
+  const [queryParams, setQueryParams] = useState({
+    perPage: PER_PAGE,
+    currentPage: 1,
+  });
+
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
@@ -71,9 +82,13 @@ const Users = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", queryParams],
     queryFn: () => {
-      return getUser().then((res) => res.data);
+      const queryString = new URLSearchParams(
+        queryParams as unknown as Record<string, string>
+      ).toString();
+      // console.log(queryString);
+      return getUser(queryString).then((res) => res.data);
     },
   });
 
@@ -129,7 +144,25 @@ const Users = () => {
           </Button>
         </UserFilter>
 
-        <Table columns={columns} dataSource={users} rowKey={"id"} />
+        <Table
+          columns={columns}
+          dataSource={users?.data}
+          rowKey={"id"}
+          pagination={{
+            total: users?.total,
+            pageSize: queryParams.perPage,
+            current: queryParams.currentPage,
+            onChange: (page) => {
+              // console.log(page, pageSize);
+              setQueryParams((prev) => {
+                return {
+                  ...prev,
+                  currentPage: page,
+                };
+              });
+            },
+          }}
+        />
 
         <Drawer
           title="Create User"
