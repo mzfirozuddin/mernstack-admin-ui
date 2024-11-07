@@ -2,15 +2,27 @@ import {
   Breadcrumb,
   Button,
   Drawer,
+  Flex,
   Form,
   Space,
+  Spin,
   Table,
   Tag,
   theme,
+  Typography,
 } from "antd";
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { createUser, getUser } from "../../http/api";
 import { CreateUserData, User } from "../../types";
 import { useAuthStore } from "../../store";
@@ -78,7 +90,8 @@ const Users = () => {
 
   const {
     data: users, //: Alise name
-    isLoading,
+    // isLoading,  //: If we use "placeholderData" then isLoading not working. Use isFetching
+    isFetching,
     isError,
     error,
   } = useQuery({
@@ -90,6 +103,7 @@ const Users = () => {
       // console.log(queryString);
       return getUser(queryString).then((res) => res.data);
     },
+    placeholderData: keepPreviousData, //: to fix the UI jumping issue
   });
 
   const { user } = useAuthStore();
@@ -121,14 +135,24 @@ const Users = () => {
   return (
     <>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Breadcrumb
-          // separator=">"
-          separator={<RightOutlined />}
-          items={[{ title: <Link to="/">Dashboard</Link> }, { title: "Users" }]}
-        />
+        <Flex justify="space-between">
+          <Breadcrumb
+            // separator=">"
+            separator={<RightOutlined />}
+            items={[
+              { title: <Link to="/">Dashboard</Link> },
+              { title: "Users" },
+            ]}
+          />
 
-        {isLoading && <div>Loading...</div>}
-        {isError && <div>{error.message}</div>}
+          {isFetching && (
+            <Spin indicator={<LoadingOutlined spin />} size="large" />
+          )}
+
+          {isError && (
+            <Typography.Text type="danger">{error.message}</Typography.Text>
+          )}
+        </Flex>
 
         <UserFilter
           onFilterChange={(filterName: string, filterValue: string) => {
