@@ -24,7 +24,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { createUser, getUser } from "../../http/api";
-import { CreateUserData, User } from "../../types";
+import { CreateUserData, FieldData, User } from "../../types";
 import { useAuthStore } from "../../store";
 import UserFilter from "./UserFilter";
 import { useState } from "react";
@@ -75,6 +75,7 @@ const columns = [
 
 const Users = () => {
   const [form] = Form.useForm(); //: This hook provided by antd
+  const [filterForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   const {
@@ -97,8 +98,15 @@ const Users = () => {
   } = useQuery({
     queryKey: ["users", queryParams],
     queryFn: () => {
+      // const filteredParams = Object.entries(queryParams); //- it will convert the data in array formats like [key, value]
+      // console.log(filteredParams);
+
+      const filteredParams = Object.fromEntries(
+        Object.entries(queryParams).filter((item) => !!item[1]) //- It will filter the truthy value and ignore the falsey values
+      );
+
       const queryString = new URLSearchParams(
-        queryParams as unknown as Record<string, string>
+        filteredParams as unknown as Record<string, string>
       ).toString();
       // console.log(queryString);
       return getUser(queryString).then((res) => res.data);
@@ -128,6 +136,29 @@ const Users = () => {
     setDrawerOpen(false);
   };
 
+  //: Filter functionality
+  const onFilterChange = (changedFields: FieldData[]) => {
+    // console.log(changedFields);
+    //- ================= Return explicitly ========================
+    // const changedFiltersField = changedFields.map((item) => {
+    //   // console.log([item.name[0]]);
+    //   return {
+    //     [item.name[0]]: item.value,
+    //   };
+    // });
+    //- ===========================================================
+
+    const changedFiltersField = changedFields
+      .map((item) => ({
+        [item.name[0]]: item.value,
+      }))
+      .reduce((acc, item) => ({ ...acc, ...item }), {});
+    // console.log(changedFiltersField);
+
+    setQueryParams((prev) => ({ ...prev, ...changedFiltersField }));
+    // console.log(queryParams);
+  };
+
   if (user?.role !== "admin") {
     return <Navigate to="/" replace={true} />;
   }
@@ -154,19 +185,17 @@ const Users = () => {
           )}
         </Flex>
 
-        <UserFilter
-          onFilterChange={(filterName: string, filterValue: string) => {
-            console.log(filterName, filterValue);
-          }}
-        >
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setDrawerOpen(true)}
-          >
-            Add User
-          </Button>
-        </UserFilter>
+        <Form form={filterForm} onFieldsChange={onFilterChange}>
+          <UserFilter>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setDrawerOpen(true)}
+            >
+              Add User
+            </Button>
+          </UserFilter>
+        </Form>
 
         <Table
           columns={columns}
