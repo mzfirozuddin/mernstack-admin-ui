@@ -30,6 +30,8 @@ import UserFilter from "./UserFilter";
 import { useState } from "react";
 import UserForm from "./forms/UserForm";
 import { PER_PAGE } from "../../constants";
+import { debounce } from "lodash";
+import React from "react";
 
 const columns = [
   {
@@ -136,6 +138,12 @@ const Users = () => {
     setDrawerOpen(false);
   };
 
+  const debounceQUpdate = React.useMemo(() => {
+    return debounce((value: string | undefined) => {
+      setQueryParams((prev) => ({ ...prev, q: value }));
+    }, 500);
+  }, []);
+
   //: Filter functionality
   const onFilterChange = (changedFields: FieldData[]) => {
     // console.log(changedFields);
@@ -155,7 +163,13 @@ const Users = () => {
       .reduce((acc, item) => ({ ...acc, ...item }), {});
     // console.log(changedFiltersField);
 
-    setQueryParams((prev) => ({ ...prev, ...changedFiltersField }));
+    //: Add debounce functionality for 'q' query
+    if ("q" in changedFiltersField) {
+      debounceQUpdate(changedFiltersField.q);
+    } else {
+      setQueryParams((prev) => ({ ...prev, ...changedFiltersField }));
+    }
+
     // console.log(queryParams);
   };
 
