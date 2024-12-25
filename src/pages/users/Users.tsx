@@ -73,6 +73,15 @@ const columns = [
     dataIndex: "email",
     key: "email",
   },
+
+  {
+    title: "Restaurant",
+    dataIndex: "tenant",
+    key: "tenant",
+    render: (_text: string, record: User) => {
+      return <div>{record.tenant?.address}</div>;
+    },
+  },
 ];
 
 const Users = () => {
