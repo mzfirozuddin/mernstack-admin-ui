@@ -2,11 +2,17 @@ import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { Link } from "react-router-dom";
 import RestaurantsFilter from "./RestaurantsFilter";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { createTenant, getRestaurants } from "../../http/api";
 import { useState } from "react";
 import TenantForm from "./forms/TenantForm";
 import { Tenant } from "../../types";
+import { PER_PAGE } from "../../constants";
 
 const columns = [
   {
@@ -64,6 +70,12 @@ const columns = [
 const Restaurants = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+
+  const [queryParams, setQueryParams] = useState({
+    perPage: PER_PAGE,
+    currentPage: 1,
+  });
+
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
@@ -76,10 +88,16 @@ const Restaurants = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["restaurants"],
+    queryKey: ["restaurants", queryParams],
     queryFn: () => {
-      return getRestaurants().then((res) => res.data);
+      const queryString = new URLSearchParams(
+        queryParams as unknown as Record<string, string>
+      ).toString();
+      // console.log(queryString);
+
+      return getRestaurants(queryString).then((res) => res.data);
     },
+    placeholderData: keepPreviousData, //: to fix the UI jumping issue
   });
 
   //: Create tenant mutate
@@ -128,7 +146,25 @@ const Restaurants = () => {
           </Button>
         </RestaurantsFilter>
 
-        <Table columns={columns} dataSource={restaurants} rowKey={"id"} />
+        <Table
+          columns={columns}
+          dataSource={restaurants?.data}
+          rowKey={"id"}
+          pagination={{
+            total: restaurants?.total,
+            pageSize: queryParams.perPage,
+            current: queryParams.currentPage,
+            //: In onChange we get two parameter(page, pageSize)
+            onChange: (page) => {
+              setQueryParams((prev) => {
+                return {
+                  ...prev,
+                  currentPage: page,
+                };
+              });
+            },
+          }}
+        />
 
         <Drawer
           title="Create Tenant"
