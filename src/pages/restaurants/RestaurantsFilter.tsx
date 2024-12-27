@@ -1,24 +1,18 @@
-import { Card, Col, Input, Row } from "antd";
+import { Card, Col, Form, Input, Row } from "antd";
 
 type RestaurantsFilterProps = {
   children?: React.ReactNode;
-  onFilterChange: (filterValue: string) => void;
 };
 
-const RestaurantsFilter = ({
-  onFilterChange,
-  children,
-}: RestaurantsFilterProps) => {
+const RestaurantsFilter = ({ children }: RestaurantsFilterProps) => {
   return (
     <Card>
       <Row justify="space-between">
         {/* style={{ border: "1px red solid" }} */}
         <Col span={8} style={{ paddingLeft: "10px" }}>
-          <Input.Search
-            placeholder="Search"
-            allowClear={true}
-            onChange={(e) => onFilterChange(e.target.value)}
-          />
+          <Form.Item name="q">
+            <Input.Search placeholder="Search" allowClear={true} />
+          </Form.Item>
         </Col>
         <Col style={{ paddingRight: "30px" }}>{children}</Col>
       </Row>

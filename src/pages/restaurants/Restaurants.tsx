@@ -11,8 +11,10 @@ import {
 import { createTenant, getRestaurants } from "../../http/api";
 import { useState } from "react";
 import TenantForm from "./forms/TenantForm";
-import { Tenant } from "../../types";
+import { FieldData, Tenant } from "../../types";
 import { PER_PAGE } from "../../constants";
+import { debounce } from "lodash";
+import React from "react";
 
 const columns = [
   {
@@ -69,6 +71,7 @@ const columns = [
 
 const Restaurants = () => {
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   const [queryParams, setQueryParams] = useState({
@@ -117,6 +120,25 @@ const Restaurants = () => {
     setDrawerOpen(false);
   };
 
+  //: Add debounce functionality
+  const debounceQUpdate = React.useMemo(() => {
+    return debounce((value: string | undefined) => {
+      setQueryParams((prev) => ({ ...prev, q: value }));
+    }, 500);
+  }, []);
+
+  //: Add filter functionality
+  const onFilterChange = (changedFields: FieldData[]) => {
+    // console.log(changedFields);
+    const changedFiltersField = changedFields
+      .map((item) => ({
+        [item.name[0]]: item.value,
+      }))
+      .reduce((acc, item) => ({ ...acc, ...item }), {});
+    // console.log(changedFiltersField.q);
+    debounceQUpdate(changedFiltersField.q); //: use debounce
+  };
+
   return (
     <>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
@@ -132,19 +154,17 @@ const Restaurants = () => {
         {isLoading && <div>Loading...</div>}
         {isError && <div>{error.message}</div>}
 
-        <RestaurantsFilter
-          onFilterChange={(filterValue: string) => {
-            console.log(filterValue);
-          }}
-        >
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setDrawerOpen(true)}
-          >
-            Add Restaurants
-          </Button>
-        </RestaurantsFilter>
+        <Form form={filterForm} onFieldsChange={onFilterChange}>
+          <RestaurantsFilter>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setDrawerOpen(true)}
+            >
+              Add Restaurants
+            </Button>
+          </RestaurantsFilter>
+        </Form>
 
         <Table
           columns={columns}
