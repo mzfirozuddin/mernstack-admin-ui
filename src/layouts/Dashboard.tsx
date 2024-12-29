@@ -1,4 +1,4 @@
-import { Navigate, NavLink, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store";
 import {
   Avatar,
@@ -80,6 +80,7 @@ const getMenuItems = (role: string) => {
 };
 
 const Dashboard = () => {
+  const location = useLocation();
   const { logout: logoutFromStore } = useAuthStore();
 
   //:TODO: we can make this a custom hook
@@ -100,7 +101,13 @@ const Dashboard = () => {
   //: If user not login then redirect to login page
   const { user } = useAuthStore();
   if (user === null) {
-    return <Navigate to="/auth/login" replace={true} />;
+    // return <Navigate to="/auth/login" replace={true} />;
+    return (
+      <Navigate
+        to={`/auth/login?returnTo=${location.pathname}`}
+        replace={true}
+      />
+    );
   }
 
   const items = getMenuItems(user.role); //: this function for manupulate the manu items
