@@ -32,12 +32,6 @@ const getMenuItems = (role: string) => {
       priority: 0,
     },
     {
-      key: "/restaurants",
-      icon: <Icon component={FoodIcon} />,
-      label: <NavLink to="/restaurants">Restaurants</NavLink>,
-      priority: 2,
-    },
-    {
       key: "/products",
       icon: <Icon component={BasketIcon} />,
       label: <NavLink to="/products">Products</NavLink>,
@@ -70,6 +64,13 @@ const getMenuItems = (role: string) => {
       icon: <Icon component={UserIcon} />,
       label: <NavLink to="/users">Users</NavLink>,
       priority: 1,
+    });
+
+    menus.splice(2, 0, {
+      key: "/restaurants",
+      icon: <Icon component={FoodIcon} />,
+      label: <NavLink to="/restaurants">Restaurants</NavLink>,
+      priority: 2,
     });
 
     return menus;
