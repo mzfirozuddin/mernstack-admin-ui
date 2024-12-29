@@ -149,7 +149,7 @@ const Users = () => {
 
   const debounceQUpdate = React.useMemo(() => {
     return debounce((value: string | undefined) => {
-      setQueryParams((prev) => ({ ...prev, q: value }));
+      setQueryParams((prev) => ({ ...prev, q: value, currentPage: 1 }));
     }, 500);
   }, []);
 
@@ -176,7 +176,11 @@ const Users = () => {
     if ("q" in changedFiltersField) {
       debounceQUpdate(changedFiltersField.q);
     } else {
-      setQueryParams((prev) => ({ ...prev, ...changedFiltersField }));
+      setQueryParams((prev) => ({
+        ...prev,
+        ...changedFiltersField,
+        currentPage: 1, //: search start from 1st page, otherwise is skip the previous pages
+      }));
     }
 
     // console.log(queryParams);
