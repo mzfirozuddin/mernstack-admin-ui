@@ -3,7 +3,7 @@ import { getRestaurants } from "../../../http/api";
 import { useQuery } from "@tanstack/react-query";
 import { Tenant } from "../../../types";
 
-const UserForm = () => {
+const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
   const {
     data: restaurants, //: Alise name
   } = useQuery({
@@ -56,35 +56,39 @@ const UserForm = () => {
                     { type: "email", message: "Email is not valid!" },
                   ]}
                 >
-                  <Input size="large" />
+                  <Input disabled={isEditMode && true} size="large" />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
 
-          <Card title="Security info" bordered={false}>
-            <Row gutter={20}>
-              <Col span={12}>
-                <Form.Item
-                  label="Password"
-                  name="password"
-                  style={{ fontWeight: "500" }}
-                  rules={[{ required: true, message: "Password is required!" }]}
-                >
-                  <Input size="large" type="password" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Confirm password"
-                  name="cPassword"
-                  style={{ fontWeight: "500" }}
-                >
-                  <Input size="large" type="password" />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+          {!isEditMode && (
+            <Card title="Security info" bordered={false}>
+              <Row gutter={20}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Password"
+                    name="password"
+                    style={{ fontWeight: "500" }}
+                    rules={[
+                      { required: true, message: "Password is required!" },
+                    ]}
+                  >
+                    <Input size="large" type="password" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Confirm password"
+                    name="cPassword"
+                    style={{ fontWeight: "500" }}
+                  >
+                    <Input size="large" type="password" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          )}
 
           <Card title="Role & Tenant info" bordered={false}>
             <Row gutter={20}>
@@ -96,6 +100,7 @@ const UserForm = () => {
                   rules={[{ required: true, message: "Role is required!" }]}
                 >
                   <Select
+                    id="selectBoxInUserForm"
                     size="large"
                     style={{ width: "100%" }}
                     allowClear={true}

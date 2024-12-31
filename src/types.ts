@@ -14,13 +14,21 @@ export type User = {
 };
 
 export type CreateUserData = {
-  id: number;
   email: string;
   firstName: string;
   lastName: string;
   password: string;
   role: string;
   tenantId: number;
+};
+
+export type UpdateUserData = {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  tenantId?: number;
 };
 
 export type Tenant = {
