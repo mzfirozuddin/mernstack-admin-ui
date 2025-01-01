@@ -8,7 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createTenant, getRestaurants } from "../../http/api";
+import { createTenant, getRestaurants, updateTenant } from "../../http/api";
 import { useState } from "react";
 import TenantForm from "./forms/TenantForm";
 import { FieldData, Tenant } from "../../types";
@@ -72,6 +72,10 @@ const columns = [
 const Restaurants = () => {
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
+
+  const [currentEditingTenant, setCurrentEditingTenant] =
+    React.useState<Tenant | null>(null);
+
   const queryClient = useQueryClient();
 
   const [queryParams, setQueryParams] = useState({
@@ -80,6 +84,13 @@ const Restaurants = () => {
   });
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (currentEditingTenant) {
+      setDrawerOpen(true);
+      form.setFieldsValue(currentEditingTenant);
+    }
+  }, [currentEditingTenant, form]);
 
   const {
     token: { colorBgLayout },
@@ -112,11 +123,31 @@ const Restaurants = () => {
     },
   });
 
+  //: Update tenant mutate
+  const { mutate: updateTenantMutate } = useMutation({
+    mutationKey: ["update-tenant"],
+    mutationFn: (data: Tenant) =>
+      updateTenant(data, currentEditingTenant!.id).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      return;
+    },
+  });
+
   const onHandleSubmit = async () => {
     await form.validateFields();
-    await tenantMutate(form.getFieldsValue());
-    // console.log(form.getFieldsValue());
+    const isEditMode = !!currentEditingTenant;
+    if (isEditMode) {
+      // console.log("Updating...");
+      await updateTenantMutate(form.getFieldsValue());
+    } else {
+      // console.log("Creating...");
+      await tenantMutate(form.getFieldsValue());
+      // console.log(form.getFieldsValue());
+    }
+
     form.resetFields();
+    setCurrentEditingTenant(null);
     setDrawerOpen(false);
   };
 
@@ -167,7 +198,26 @@ const Restaurants = () => {
         </Form>
 
         <Table
-          columns={columns}
+          columns={[
+            ...columns,
+            {
+              title: "Actions",
+              render: (_text: string, record: Tenant) => {
+                return (
+                  <Space>
+                    <Button
+                      type="link"
+                      onClick={() => setCurrentEditingTenant(record)}
+                    >
+                      Edit
+                    </Button>
+                    {/* TODO: Add delete functionality */}
+                    {/* <Button type="link">Delete</Button> */}
+                  </Space>
+                );
+              },
+            },
+          ]}
           dataSource={restaurants?.data}
           rowKey={"id"}
           pagination={{
@@ -190,13 +240,14 @@ const Restaurants = () => {
         />
 
         <Drawer
-          title="Create Tenant"
+          title={currentEditingTenant ? "Update Tenant" : "Create Tenant"}
           width={550}
           styles={{ body: { backgroundColor: colorBgLayout } }}
           destroyOnClose={true}
           open={drawerOpen}
           onClose={() => {
             form.resetFields();
+            setCurrentEditingTenant(null);
             setDrawerOpen(false);
           }}
           extra={
@@ -204,6 +255,7 @@ const Restaurants = () => {
               <Button
                 onClick={() => {
                   form.resetFields();
+                  setCurrentEditingTenant(null);
                   setDrawerOpen(false);
                 }}
               >

@@ -170,10 +170,10 @@ const Users = () => {
     await form.validateFields();
     const isEditMode = !!currentEditingUser;
     if (isEditMode) {
-      console.log("Updating....");
+      // console.log("Updating....");
       await updateUserMutate(form.getFieldsValue());
     } else {
-      console.log("Creating....");
+      // console.log("Creating....");
       await userMutate(form.getFieldsValue());
       // console.log("Form Data: ", form.getFieldsValue());
     }
