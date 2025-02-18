@@ -37,6 +37,11 @@ export type Tenant = {
   address: string;
 };
 
+export type Category = {
+  name: string;
+  _id: string;
+};
+
 export type FieldData = {
   name: string[];
   value?: string;

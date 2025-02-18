@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   Col,
@@ -9,12 +10,34 @@ import {
   Switch,
   Typography,
 } from "antd";
+import { getCategories, getRestaurants } from "../../http/api";
+import { Category, Tenant } from "../../types";
 
 type ProductFilterProps = {
   children?: React.ReactNode;
 };
 
 const ProductFilter = ({ children }: ProductFilterProps) => {
+  //: Fetching restaurants
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => {
+      return getRestaurants(`perPage=100&currentPage=1`).then(
+        (res) => res.data
+      );
+    },
+  });
+  // console.log("Restaurants", restaurants);
+
+  //: Fetching categories
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => {
+      return getCategories();
+    },
+  });
+  // console.log("Categories", categories?.data);
+
   return (
     <Card>
       <Row justify="space-between">
@@ -32,8 +55,13 @@ const ProductFilter = ({ children }: ProductFilterProps) => {
                   allowClear={true}
                   placeholder="Select category"
                 >
-                  <Select.Option value="pizza">Pizza</Select.Option>
-                  <Select.Option value="beverages">Beverages</Select.Option>
+                  {categories?.data.map((category: Category) => {
+                    return (
+                      <Select.Option key={category._id} value={category._id}>
+                        {category.name}
+                      </Select.Option>
+                    );
+                  })}
                 </Select>
               </Form.Item>
             </Col>
@@ -45,8 +73,13 @@ const ProductFilter = ({ children }: ProductFilterProps) => {
                   allowClear={true}
                   placeholder="Select restaurant"
                 >
-                  <Select.Option value="pizza-hub">Pizza Hub</Select.Option>
-                  <Select.Option value="beverage">Softy Corner</Select.Option>
+                  {restaurants?.data.map((restaurant: Tenant) => {
+                    return (
+                      <Select.Option key={restaurant.id} value={restaurant.id}>
+                        {restaurant.name}
+                      </Select.Option>
+                    );
+                  })}
                 </Select>
               </Form.Item>
             </Col>
