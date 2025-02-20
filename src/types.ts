@@ -46,3 +46,13 @@ export type FieldData = {
   name: string[];
   value?: string;
 };
+
+export type Product = {
+  _id: string;
+  name: string;
+  image: string;
+  isPublish: boolean;
+  description: string;
+  category: Category;
+  createdAt: string;
+};

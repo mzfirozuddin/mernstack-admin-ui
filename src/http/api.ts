@@ -33,6 +33,8 @@ export const updateTenant = (tenant: Tenant, id: number) =>
 
 //: Catelog service
 export const getCategories = () => api.get(`${CATALOG_SERVICE}/categories`);
+export const getProducts = (queryParams: string) =>
+  api.get(`${CATALOG_SERVICE}/products?${queryParams}`);
 
 /* 
 export const login = (credentials: Credentials) =>
