@@ -1,4 +1,8 @@
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
@@ -6,6 +10,7 @@ import {
   Form,
   Image,
   Space,
+  Spin,
   Table,
   Tag,
   Typography,
@@ -85,7 +90,12 @@ const Products = () => {
     page: 1,
   });
 
-  const { data: products } = useQuery({
+  const {
+    data: products,
+    isFetching,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["products", queryParams],
     queryFn: () => {
       const filteredParams = Object.fromEntries(
@@ -143,6 +153,14 @@ const Products = () => {
               { title: "Products" },
             ]}
           />
+
+          {isFetching && (
+            <Spin indicator={<LoadingOutlined spin />} size="large" />
+          )}
+
+          {isError && (
+            <Typography.Text type="danger">{error.message}</Typography.Text>
+          )}
         </Flex>
 
         <Form form={filterForm} onFieldsChange={onFilterChange}>
