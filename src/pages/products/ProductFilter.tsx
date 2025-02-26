@@ -12,12 +12,16 @@ import {
 } from "antd";
 import { getCategories, getRestaurants } from "../../http/api";
 import { Category, Tenant } from "../../types";
+import { useAuthStore } from "../../store";
 
 type ProductFilterProps = {
   children?: React.ReactNode;
 };
 
 const ProductFilter = ({ children }: ProductFilterProps) => {
+  //: Get user from state
+  const { user } = useAuthStore();
+
   //: Fetching restaurants
   const { data: restaurants } = useQuery({
     queryKey: ["restaurants"],
@@ -66,23 +70,28 @@ const ProductFilter = ({ children }: ProductFilterProps) => {
               </Form.Item>
             </Col>
 
-            <Col span={5}>
-              <Form.Item name="tenantId">
-                <Select
-                  style={{ width: "100%" }}
-                  allowClear={true}
-                  placeholder="Select restaurant"
-                >
-                  {restaurants?.data.map((restaurant: Tenant) => {
-                    return (
-                      <Select.Option key={restaurant.id} value={restaurant.id}>
-                        {restaurant.name}
-                      </Select.Option>
-                    );
-                  })}
-                </Select>
-              </Form.Item>
-            </Col>
+            {user!.role === "admin" && (
+              <Col span={5}>
+                <Form.Item name="tenantId">
+                  <Select
+                    style={{ width: "100%" }}
+                    allowClear={true}
+                    placeholder="Select restaurant"
+                  >
+                    {restaurants?.data.map((restaurant: Tenant) => {
+                      return (
+                        <Select.Option
+                          key={restaurant.id}
+                          value={restaurant.id}
+                        >
+                          {restaurant.name}
+                        </Select.Option>
+                      );
+                    })}
+                  </Select>
+                </Form.Item>
+              </Col>
+            )}
 
             <Col span={6}>
               <Space>
