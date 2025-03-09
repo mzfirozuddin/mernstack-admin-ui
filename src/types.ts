@@ -37,15 +37,37 @@ export type Tenant = {
   address: string;
 };
 
-export type Category = {
-  name: string;
-  _id: string;
-};
+// export type Category = {
+//   name: string;
+//   _id: string;
+// };
 
 export type FieldData = {
   name: string[];
   value?: string;
 };
+
+//: Type of Category Object
+export interface IPriceConfiguration {
+  [key: string]: {
+    priceType: "base" | "additional";
+    availableOptions: string[];
+  };
+}
+
+export interface IAttribute {
+  name: string;
+  widgetType: "switch" | "radio";
+  defaultValue: string;
+  availableOptions: string[];
+}
+
+export interface ICategory {
+  _id: string;
+  name: string;
+  priceConfiguration: IPriceConfiguration;
+  attributes: IAttribute[];
+}
 
 export type Product = {
   _id: string;
@@ -53,6 +75,6 @@ export type Product = {
   image: string;
   isPublish: boolean;
   description: string;
-  category: Category;
+  category: ICategory;
   createdAt: string;
 };

@@ -10,12 +10,18 @@ import {
   Typography,
   Upload,
 } from "antd";
-import { Category, Tenant } from "../../../types";
+import { ICategory, Tenant } from "../../../types";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories, getRestaurants } from "../../../http/api";
 import { PlusOutlined } from "@ant-design/icons";
+import Pricing from "./Pricing";
+import Attributes from "./Attributes";
 
 const ProductForm = () => {
+  //: AndD provide a hook, where we can watch a field change
+  const selectedCategory = Form.useWatch("categoryId");
+  // console.log("Category: ", selectedCategory);
+
   //: Fetching categories
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -66,8 +72,15 @@ const ProductForm = () => {
                     placeholder="Select category"
                     onChange={() => {}}
                   >
-                    {categories?.data.map((category: Category) => (
-                      <Select.Option value={category._id} key={category._id}>
+                    {categories?.data.map((category: ICategory) => (
+                      // <Select.Option value={category._id} key={category._id}>
+                      //   {category.name}
+                      // </Select.Option>
+                      //: Here we need full category object, That's why we convert full object in string so that we can pass it in value
+                      <Select.Option
+                        value={JSON.stringify(category)}
+                        key={category._id}
+                      >
                         {category.name}
                       </Select.Option>
                     ))}
@@ -145,6 +158,9 @@ const ProductForm = () => {
               </Col>
             </Row>
           </Card>
+
+          {selectedCategory && <Pricing selectedCategory={selectedCategory} />}
+          {selectedCategory && <Attributes />}
 
           <Card title="Other Properties" bordered={false}>
             <Row gutter={24}>
