@@ -1,0 +1,176 @@
+import {
+  Card,
+  Col,
+  Form,
+  Input,
+  Row,
+  Select,
+  Space,
+  Switch,
+  Typography,
+  Upload,
+} from "antd";
+import { Category, Tenant } from "../../../types";
+import { useQuery } from "@tanstack/react-query";
+import { getCategories, getRestaurants } from "../../../http/api";
+import { PlusOutlined } from "@ant-design/icons";
+
+const ProductForm = () => {
+  //: Fetching categories
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => {
+      return getCategories();
+    },
+  });
+
+  //: Fetching Restaurants(tenant)
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => {
+      return getRestaurants(`perPage=100&currentPage=1`).then(
+        (res) => res.data
+      );
+    },
+  });
+
+  return (
+    <Row>
+      <Col span={24}>
+        <Space direction="vertical" size="large">
+          <Card title="Product info" bordered={false}>
+            <Row gutter={20}>
+              <Col span={12}>
+                <Form.Item
+                  label="Product name"
+                  name="name"
+                  style={{ fontWeight: "500" }}
+                  rules={[
+                    { required: true, message: "Product name is required!" },
+                  ]}
+                >
+                  <Input size="large" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Category"
+                  name="categoryId"
+                  style={{ fontWeight: "500" }}
+                  rules={[{ required: true, message: "Category is required!" }]}
+                >
+                  <Select
+                    size="large"
+                    style={{ width: "100%" }}
+                    allowClear={true}
+                    placeholder="Select category"
+                    onChange={() => {}}
+                  >
+                    {categories?.data.map((category: Category) => (
+                      <Select.Option value={category._id} key={category._id}>
+                        {category.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item
+                  label="Description"
+                  name="description"
+                  style={{ fontWeight: "500" }}
+                  rules={[
+                    { required: true, message: "Description is required!" },
+                  ]}
+                >
+                  <Input.TextArea
+                    rows={2}
+                    maxLength={100}
+                    style={{ resize: "none" }}
+                    size="large"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+
+          <Card title="Product Image" bordered={false}>
+            <Row gutter={20}>
+              <Col span={12}>
+                <Form.Item
+                  label=""
+                  name="image"
+                  style={{ fontWeight: "500" }}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please upload a product image!",
+                    },
+                  ]}
+                >
+                  <Upload listType="picture-card">
+                    <Space direction="vertical">
+                      <PlusOutlined />
+                      <Typography.Text>Upload</Typography.Text>
+                    </Space>
+                  </Upload>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+
+          <Card title="Tenant info" bordered={false}>
+            <Row gutter={24}>
+              <Col span={24}>
+                <Form.Item
+                  label="Select Restaurants"
+                  name="tenantId"
+                  style={{ fontWeight: "500" }}
+                  rules={[{ required: true, message: "Tenant is required!" }]}
+                >
+                  <Select
+                    size="large"
+                    style={{ width: "100%" }}
+                    allowClear={true}
+                    placeholder="Select restaurant"
+                    onChange={() => {}}
+                  >
+                    {restaurants?.data.map((tenant: Tenant) => (
+                      <Select.Option value={tenant.id} key={tenant.id}>
+                        {tenant.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+
+          <Card title="Other Properties" bordered={false}>
+            <Row gutter={24}>
+              <Col span={24}>
+                <Space>
+                  <Form.Item name="isPublish">
+                    <Switch
+                      defaultChecked={false}
+                      onChange={() => {}}
+                      checkedChildren="Yes"
+                      unCheckedChildren="No"
+                    />
+                  </Form.Item>
+                  <Typography.Text
+                    style={{ marginBottom: 24, display: "block" }}
+                  >
+                    Published
+                  </Typography.Text>
+                </Space>
+              </Col>
+            </Row>
+          </Card>
+        </Space>
+      </Col>
+    </Row>
+  );
+};
+
+export default ProductForm;
