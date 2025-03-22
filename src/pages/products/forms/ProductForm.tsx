@@ -3,6 +3,7 @@ import {
   Col,
   Form,
   Input,
+  message,
   Row,
   Select,
   Space,
@@ -19,6 +20,7 @@ import Pricing from "./Pricing";
 import Attributes from "./Attributes";
 
 const ProductForm = () => {
+  const [messageApi, contextHolder] = message.useMessage();
   //: AndD provide a hook, where we can watch a field change
   const selectedCategory = Form.useWatch("categoryId");
   // console.log("Category: ", selectedCategory);
@@ -45,8 +47,17 @@ const ProductForm = () => {
   const uploadConfig: UploadProps = {
     name: "file",
     multiple: false,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    showUploadList: false,
     beforeUpload: (file) => {
+      //: We can write file validation logic here
+      const isJpgOrPng =
+        file.type === "image/jpeg" || file.type === "image/png";
+      if (!isJpgOrPng) {
+        // console.log("You can only upload JPG/PNG file!");
+        messageApi.error("You can only upload JPG/PNG file!");
+      }
+
+      //: TODO: Image size validation
       return false; // Here returning flase, means do nothing before upolad.
     },
   };
@@ -132,6 +143,8 @@ const ProductForm = () => {
                     },
                   ]}
                 >
+                  {/* //: "contextHolder" is for antD messageAPI */}
+                  {contextHolder}
                   <Upload listType="picture-card" {...uploadConfig}>
                     <Space direction="vertical">
                       <PlusOutlined />
