@@ -36,6 +36,15 @@ const Pricing = ({ selectedCategory }: PricingProps) => {
                     {configurationValue.availableOptions.map(
                       (option: string) => {
                         // console.log("Option", option);
+                        // console.log("Name: ", [
+                        //   "priceConfiguration",
+                        //   JSON.stringify({
+                        //     configurationKey: configurationKey,
+                        //     priceType: configurationValue.priceType,
+                        //   }),
+                        //   option,
+                        // ]);
+
                         return (
                           <Col span={8} key={option}>
                             <Form.Item

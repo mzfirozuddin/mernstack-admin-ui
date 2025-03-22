@@ -20,15 +20,21 @@ import {
 import { Link } from "react-router-dom";
 import ProductFilter from "./ProductFilter";
 import { FieldData, Product } from "../../types";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { PER_PAGE } from "../../constants";
-import { getProducts } from "../../http/api";
+import { createProduct, getProducts } from "../../http/api";
 import { format } from "date-fns";
 import React from "react";
 import { debounce } from "lodash";
 import { useAuthStore } from "../../store";
 import ProductForm from "./forms/ProductForm";
+import { makeFormData } from "./helper/helper";
 
 const columns = [
   {
@@ -154,8 +160,127 @@ const Products = () => {
     console.log("QueryParams: ", queryParams);
   };
 
-  const onHandleSubmit = () => {
-    console.log("Submitting...");
+  //: Create product mutation
+  const queryClient = useQueryClient();
+  const { mutate: productMutate } = useMutation({
+    mutationKey: ["product"],
+    mutationFn: async (data: FormData) =>
+      createProduct(data).then((res) => res.data),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["product"] });
+      form.resetFields(); //: After successfull submit clear the form
+      setDrawerOpen(false);
+      return;
+    },
+  });
+
+  const onHandleSubmit = async () => {
+    //: Validate the fields
+    await form.validateFields();
+    // console.log("productForm", form.getFieldsValue());
+
+    //+ PriceConfiguration:
+    //: Required priceConfiguration
+    // const dummyPriceConfiguration = {
+    //   Size: {
+    //     priceType: "base",
+    //     availableOptions: {
+    //       Small: 400,
+    //       Medium: 600,
+    //       Large: 800,
+    //     },
+    //   },
+    //   Crust: {
+    //     priceType: "additional",
+    //     availableOptions: {
+    //       Thin: 50,
+    //       Thick: 100,
+    //     },
+    //   },
+    // };
+
+    //: Current received priceConfiguration
+    // const currentPrice = {
+    //   '{"configurationKey":"Size","priceType":"base"}': {
+    //     Small: 100,
+    //     Medium: 200,
+    //     Large: 300,
+    //   },
+    //   '{"configurationKey":"Crust","priceType":"additional"}': {
+    //     Thin: 0,
+    //     Thick: 50,
+    //   },
+    // };
+
+    //: Transform to required priceConfiguration
+    const priceConfiguration = form.getFieldValue("priceConfiguration");
+    const pricing = Object.entries(priceConfiguration).reduce(
+      (acc, [key, value]) => {
+        const parsedKey = JSON.parse(key);
+
+        return {
+          ...acc,
+          [parsedKey.configurationKey]: {
+            priceType: parsedKey.priceType,
+            availableOptions: value,
+          },
+        };
+      },
+      {}
+    ); //: Second parameter initial value in reduce (empty object)
+    // console.log("PriceConfiguration: ", pricing);
+
+    //+ CategoryId:
+    //: Get categoryId
+    // const currentCategory = {"_id":"678408f2f0c79050c20777cc","name":"Pizza","priceConfiguration":{"Size":{"priceType":"base","availableOptions":["Small","Medium","Large"],"_id":"67855f363bc4abc62825041d"},"Crust":{"priceType":"additional","availableOptions":["Thin","Thick"],"_id":"67855f363bc4abc62825041e"}},"attributes":[{"name":"isHit","widgetType":"switch","defaultValue":"No","availableOptions":["Yes","No"],"_id":"67855f363bc4abc62825041b"},{"name":"Spiciness","widgetType":"radio","defaultValue":"Medium","availableOptions":["Less","Medium","High"],"_id":"67855f363bc4abc62825041c"}],"createdAt":"2025-01-12T18:24:50.054Z","updatedAt":"2025-01-13T19:01:23.697Z","__v":0}
+    const categoryId = JSON.parse(form.getFieldValue("categoryId"))._id;
+    // console.log("CategoryId: ", categoryId);
+
+    //+ Attributes:
+    //: Required attributes
+    // const dummyAttributes = [
+    //   {
+    //     name: "Is Hit",
+    //     value: true,
+    //   },
+    //   {
+    //     name: "Spiciness",
+    //     value: "Hot",
+    //   },
+    // ];
+
+    //: Current received attributes
+    // const currentAttributes = {
+    //   isHit: "No",
+    //   Spiciness: "Less",
+    // };
+
+    //: Transform to required attributes
+    const attributes = Object.entries(form.getFieldValue("attributes")).map(
+      ([key, value]) => {
+        return {
+          name: key,
+          value: value,
+        };
+      }
+    );
+    // console.log("Attributes: ", attributes);
+
+    //: Prepare the product data befor send
+    const postData = {
+      ...form.getFieldsValue(),
+      image: form.getFieldValue("image"), //: File data is a class object, that's why we specify it explectly (To solve the error)
+      isPublish: form.getFieldValue("isPublish") ? true : false,
+      categoryId,
+      priceConfiguration: pricing,
+      attributes,
+    };
+    // console.log("PostData: ", postData);
+
+    //: Now convert the postData to formData because it need to be multipart-Form-Data (Because file also present)
+    const formData = makeFormData(postData);
+    // console.log("FormData: ", formData);
+    await productMutate(formData);
   };
 
   return (

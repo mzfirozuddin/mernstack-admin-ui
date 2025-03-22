@@ -78,3 +78,6 @@ export type Product = {
   category: ICategory;
   createdAt: string;
 };
+
+export type ImageField = { file: File };
+export type CreateProductData = Product & { image: ImageField };

@@ -9,6 +9,7 @@ import {
   Switch,
   Typography,
   Upload,
+  UploadProps,
 } from "antd";
 import { ICategory, Tenant } from "../../../types";
 import { useQuery } from "@tanstack/react-query";
@@ -39,6 +40,16 @@ const ProductForm = () => {
       );
     },
   });
+
+  //: Configure the antD Upload componet for upload-manually
+  const uploadConfig: UploadProps = {
+    name: "file",
+    multiple: false,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    beforeUpload: (file) => {
+      return false; // Here returning flase, means do nothing before upolad.
+    },
+  };
 
   return (
     <Row>
@@ -121,7 +132,7 @@ const ProductForm = () => {
                     },
                   ]}
                 >
-                  <Upload listType="picture-card">
+                  <Upload listType="picture-card" {...uploadConfig}>
                     <Space direction="vertical">
                       <PlusOutlined />
                       <Typography.Text>Upload</Typography.Text>
