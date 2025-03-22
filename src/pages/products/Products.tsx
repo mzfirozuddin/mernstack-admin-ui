@@ -10,6 +10,7 @@ import {
   Flex,
   Form,
   Image,
+  message,
   Space,
   Spin,
   Table,
@@ -93,6 +94,7 @@ const columns = [
 ];
 
 const Products = () => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
   const { user } = useAuthStore();
@@ -162,17 +164,19 @@ const Products = () => {
 
   //: Create product mutation
   const queryClient = useQueryClient();
-  const { mutate: productMutate } = useMutation({
-    mutationKey: ["product"],
-    mutationFn: async (data: FormData) =>
-      createProduct(data).then((res) => res.data),
-    onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["product"] });
-      form.resetFields(); //: After successfull submit clear the form
-      setDrawerOpen(false);
-      return;
-    },
-  });
+  const { mutate: productMutate, isPending: isProductCreatePending } =
+    useMutation({
+      mutationKey: ["product"],
+      mutationFn: async (data: FormData) =>
+        createProduct(data).then((res) => res.data),
+      onSuccess: async () => {
+        queryClient.invalidateQueries({ queryKey: ["product"] });
+        form.resetFields(); //: After successfull submit clear the form
+        setDrawerOpen(false);
+        messageApi.success("Product created successfully.");
+        return;
+      },
+    });
 
   const onHandleSubmit = async () => {
     //: Validate the fields
@@ -379,7 +383,12 @@ const Products = () => {
               >
                 Cancel
               </Button>
-              <Button type="primary" onClick={onHandleSubmit}>
+              {contextHolder}
+              <Button
+                type="primary"
+                onClick={onHandleSubmit}
+                loading={isProductCreatePending}
+              >
                 Submit
               </Button>
             </Space>
