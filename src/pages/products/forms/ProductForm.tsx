@@ -3,24 +3,20 @@ import {
   Col,
   Form,
   Input,
-  message,
   Row,
   Select,
   Space,
   Switch,
   Typography,
-  Upload,
-  UploadProps,
 } from "antd";
 import { ICategory, Tenant } from "../../../types";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories, getRestaurants } from "../../../http/api";
-import { PlusOutlined } from "@ant-design/icons";
 import Pricing from "./Pricing";
 import Attributes from "./Attributes";
+import ProductImage from "./ProductImage";
 
 const ProductForm = () => {
-  const [messageApi, contextHolder] = message.useMessage();
   //: AndD provide a hook, where we can watch a field change
   const selectedCategory = Form.useWatch("categoryId");
   // console.log("Category: ", selectedCategory);
@@ -42,25 +38,6 @@ const ProductForm = () => {
       );
     },
   });
-
-  //: Configure the antD Upload componet for upload-manually
-  const uploadConfig: UploadProps = {
-    name: "file",
-    multiple: false,
-    showUploadList: false,
-    beforeUpload: (file) => {
-      //: We can write file validation logic here
-      const isJpgOrPng =
-        file.type === "image/jpeg" || file.type === "image/png";
-      if (!isJpgOrPng) {
-        // console.log("You can only upload JPG/PNG file!");
-        messageApi.error("You can only upload JPG/PNG file!");
-      }
-
-      //: TODO: Image size validation
-      return false; // Here returning flase, means do nothing before upolad.
-    },
-  };
 
   return (
     <Row>
@@ -132,26 +109,7 @@ const ProductForm = () => {
           <Card title="Product Image" bordered={false}>
             <Row gutter={20}>
               <Col span={12}>
-                <Form.Item
-                  label=""
-                  name="image"
-                  style={{ fontWeight: "500" }}
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please upload a product image!",
-                    },
-                  ]}
-                >
-                  {/* //: "contextHolder" is for antD messageAPI */}
-                  {contextHolder}
-                  <Upload listType="picture-card" {...uploadConfig}>
-                    <Space direction="vertical">
-                      <PlusOutlined />
-                      <Typography.Text>Upload</Typography.Text>
-                    </Space>
-                  </Upload>
-                </Form.Item>
+                <ProductImage />
               </Col>
             </Row>
           </Card>
