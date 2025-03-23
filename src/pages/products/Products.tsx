@@ -275,6 +275,10 @@ const Products = () => {
       ...form.getFieldsValue(),
       image: form.getFieldValue("image"), //: File data is a class object, that's why we specify it explectly (To solve the error)
       isPublish: form.getFieldValue("isPublish") ? true : false,
+      tenantId:
+        user!.role === "manager"
+          ? user?.tenant?.id
+          : form.getFieldValue("tenantId"),
       categoryId,
       priceConfiguration: pricing,
       attributes,

@@ -15,8 +15,10 @@ import { getCategories, getRestaurants } from "../../../http/api";
 import Pricing from "./Pricing";
 import Attributes from "./Attributes";
 import ProductImage from "./ProductImage";
+import { useAuthStore } from "../../../store";
 
 const ProductForm = () => {
+  const { user } = useAuthStore();
   //: AndD provide a hook, where we can watch a field change
   const selectedCategory = Form.useWatch("categoryId");
   // console.log("Category: ", selectedCategory);
@@ -114,32 +116,35 @@ const ProductForm = () => {
             </Row>
           </Card>
 
-          <Card title="Tenant info" bordered={false}>
-            <Row gutter={24}>
-              <Col span={24}>
-                <Form.Item
-                  label="Select Restaurants"
-                  name="tenantId"
-                  style={{ fontWeight: "500" }}
-                  rules={[{ required: true, message: "Tenant is required!" }]}
-                >
-                  <Select
-                    size="large"
-                    style={{ width: "100%" }}
-                    allowClear={true}
-                    placeholder="Select restaurant"
-                    onChange={() => {}}
+          {/* Hide the tenant select for manager at the time of product creation */}
+          {user?.role !== "manager" && (
+            <Card title="Tenant info" bordered={false}>
+              <Row gutter={24}>
+                <Col span={24}>
+                  <Form.Item
+                    label="Select Restaurants"
+                    name="tenantId"
+                    style={{ fontWeight: "500" }}
+                    rules={[{ required: true, message: "Tenant is required!" }]}
                   >
-                    {restaurants?.data.map((tenant: Tenant) => (
-                      <Select.Option value={tenant.id} key={tenant.id}>
-                        {tenant.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+                    <Select
+                      size="large"
+                      style={{ width: "100%" }}
+                      allowClear={true}
+                      placeholder="Select restaurant"
+                      onChange={() => {}}
+                    >
+                      {restaurants?.data.map((tenant: Tenant) => (
+                        <Select.Option value={tenant.id} key={tenant.id}>
+                          {tenant.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          )}
 
           {selectedCategory && <Pricing selectedCategory={selectedCategory} />}
           {selectedCategory && (
