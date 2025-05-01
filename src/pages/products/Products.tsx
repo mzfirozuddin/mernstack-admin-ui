@@ -27,9 +27,9 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PER_PAGE } from "../../constants";
-import { createProduct, getProducts } from "../../http/api";
+import { createProduct, getProducts, updateProduct } from "../../http/api";
 import { format } from "date-fns";
 import React from "react";
 import { debounce } from "lodash";
@@ -97,6 +97,46 @@ const Products = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
+
+  const [selectedProduct, setCurrentProduct] = useState<Product | null>(null);
+  useEffect(() => {
+    if (selectedProduct) {
+      setDrawerOpen(true);
+      // console.log("Selected Product: ", selectedProduct.priceConfiguration);
+      // console.log("Selected Product: ", selectedProduct.attributes);
+
+      const priceConfiguration = Object.entries(
+        selectedProduct.priceConfiguration
+      ).reduce((acc, [key, value]) => {
+        const stringifiedKey = JSON.stringify({
+          configurationKey: key,
+          priceType: value.priceType,
+        });
+
+        return {
+          ...acc,
+          [stringifiedKey]: value.availableOptions,
+        };
+      }, {});
+      // console.log("Price Configguration: ", priceConfiguration);
+
+      const attributes = selectedProduct.attributes.reduce((acc, item) => {
+        return {
+          ...acc,
+          [item.name]: item.value,
+        };
+      }, {});
+      // console.log("Attributes: ", attributes);
+
+      form.setFieldsValue({
+        ...selectedProduct,
+        priceConfiguration,
+        attributes,
+        categoryId: selectedProduct.category._id,
+      });
+    }
+  }, [selectedProduct, form]);
+
   const { user } = useAuthStore();
 
   const {
@@ -167,10 +207,18 @@ const Products = () => {
   const { mutate: productMutate, isPending: isProductCreatePending } =
     useMutation({
       mutationKey: ["product"],
-      mutationFn: async (data: FormData) =>
-        createProduct(data).then((res) => res.data),
+      mutationFn: async (data: FormData) => {
+        if (selectedProduct) {
+          //: Edit mode
+          return updateProduct(data, selectedProduct._id).then(
+            (res) => res.data
+          );
+        } else {
+          return createProduct(data).then((res) => res.data);
+        }
+      },
       onSuccess: async () => {
-        queryClient.invalidateQueries({ queryKey: ["product"] });
+        queryClient.invalidateQueries({ queryKey: ["products"] });
         form.resetFields(); //: After successfull submit clear the form
         setDrawerOpen(false);
         messageApi.success("Product created successfully.");
@@ -237,7 +285,7 @@ const Products = () => {
     //+ CategoryId:
     //: Get categoryId
     // const currentCategory = {"_id":"678408f2f0c79050c20777cc","name":"Pizza","priceConfiguration":{"Size":{"priceType":"base","availableOptions":["Small","Medium","Large"],"_id":"67855f363bc4abc62825041d"},"Crust":{"priceType":"additional","availableOptions":["Thin","Thick"],"_id":"67855f363bc4abc62825041e"}},"attributes":[{"name":"isHit","widgetType":"switch","defaultValue":"No","availableOptions":["Yes","No"],"_id":"67855f363bc4abc62825041b"},{"name":"Spiciness","widgetType":"radio","defaultValue":"Medium","availableOptions":["Less","Medium","High"],"_id":"67855f363bc4abc62825041c"}],"createdAt":"2025-01-12T18:24:50.054Z","updatedAt":"2025-01-13T19:01:23.697Z","__v":0}
-    const categoryId = JSON.parse(form.getFieldValue("categoryId"))._id;
+    const categoryId = form.getFieldValue("categoryId");
     // console.log("CategoryId: ", categoryId);
 
     //+ Attributes:
@@ -333,10 +381,15 @@ const Products = () => {
             ...columns,
             {
               title: "Actions",
-              render: () => {
+              render: (_, record: Product) => {
                 return (
                   <Space>
-                    <Button type="link" onClick={() => {}}>
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        setCurrentProduct(record);
+                      }}
+                    >
                       Edit
                     </Button>
                     {/* TODO: Add delete functionality */}
@@ -368,12 +421,13 @@ const Products = () => {
         />
 
         <Drawer
-          title={"Add Product"}
+          title={selectedProduct ? "Update Product" : "Add Product"}
           width={720}
           styles={{ body: { backgroundColor: colorBgLayout } }}
           destroyOnClose={true}
           open={drawerOpen}
           onClose={() => {
+            setCurrentProduct(null);
             form.resetFields();
             setDrawerOpen(false);
           }}
@@ -381,6 +435,7 @@ const Products = () => {
             <Space>
               <Button
                 onClick={() => {
+                  setCurrentProduct(null);
                   form.resetFields();
                   setDrawerOpen(false);
                 }}
@@ -399,7 +454,7 @@ const Products = () => {
           }
         >
           <Form layout="vertical" form={form}>
-            <ProductForm />
+            <ProductForm form={form} />
           </Form>
         </Drawer>
       </Space>

@@ -12,7 +12,7 @@ export const api = axios.create({
 });
 
 //: To avoid circular dependency
-// const refreshToken = () => api.post("/auth/refresh");  //! This will create a proble, we have to create a new instance
+// const refreshToken = () => api.post("/auth/refresh");  //! This will create a problem, we have to create a new instance
 const refreshToken = async () => {
   await axios.post(
     `${import.meta.env.VITE_BACKEND_API_URL}${AUTH_SERVICE}/auth/refresh`,

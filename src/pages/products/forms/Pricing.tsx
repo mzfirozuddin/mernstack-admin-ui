@@ -1,16 +1,22 @@
 import { Card, Col, Form, InputNumber, Row, Space, Typography } from "antd";
 import { ICategory } from "../../../types";
+import { useQuery } from "@tanstack/react-query";
+import { getCategory } from "../../../http/api";
 
 type PricingProps = {
   selectedCategory: string;
 };
 
 const Pricing = ({ selectedCategory }: PricingProps) => {
-  const category: ICategory | null = selectedCategory
-    ? JSON.parse(selectedCategory)
-    : null;
+  const { data: fetchedCategory } = useQuery<ICategory>({
+    queryKey: ["category", selectedCategory],
+    queryFn: () => {
+      return getCategory(selectedCategory).then((res) => res.data);
+    },
+    staleTime: 1000 * 60 * 5, //: 5 min
+  });
 
-  if (!category) {
+  if (!fetchedCategory) {
     return null;
   }
 
@@ -21,7 +27,7 @@ const Pricing = ({ selectedCategory }: PricingProps) => {
     >
       {
         //: When we use Object.entries() then it provide an array [key, value]
-        Object.entries(category.priceConfiguration).map(
+        Object.entries(fetchedCategory.priceConfiguration).map(
           ([configurationKey, configurationValue]) => {
             return (
               <div key={configurationKey}>

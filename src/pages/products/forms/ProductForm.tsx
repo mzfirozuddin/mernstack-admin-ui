@@ -2,6 +2,7 @@ import {
   Card,
   Col,
   Form,
+  FormInstance,
   Input,
   Row,
   Select,
@@ -17,7 +18,7 @@ import Attributes from "./Attributes";
 import ProductImage from "./ProductImage";
 import { useAuthStore } from "../../../store";
 
-const ProductForm = () => {
+const ProductForm = ({ form }: { form: FormInstance }) => {
   const { user } = useAuthStore();
   //: AndD provide a hook, where we can watch a field change
   const selectedCategory = Form.useWatch("categoryId");
@@ -78,10 +79,7 @@ const ProductForm = () => {
                       //   {category.name}
                       // </Select.Option>
                       //: Here we need full category object, That's why we convert full object in string so that we can pass it in value
-                      <Select.Option
-                        value={JSON.stringify(category)}
-                        key={category._id}
-                      >
+                      <Select.Option value={category._id} key={category._id}>
                         {category.name}
                       </Select.Option>
                     ))}
@@ -111,7 +109,7 @@ const ProductForm = () => {
           <Card title="Product Image" bordered={false}>
             <Row gutter={20}>
               <Col span={12}>
-                <ProductImage />
+                <ProductImage initialImage={form.getFieldValue("image")} />
               </Col>
             </Row>
           </Card>
@@ -135,7 +133,10 @@ const ProductForm = () => {
                       onChange={() => {}}
                     >
                       {restaurants?.data.map((tenant: Tenant) => (
-                        <Select.Option value={tenant.id} key={tenant.id}>
+                        <Select.Option
+                          value={String(tenant.id)}
+                          key={tenant.id}
+                        >
                           {tenant.name}
                         </Select.Option>
                       ))}

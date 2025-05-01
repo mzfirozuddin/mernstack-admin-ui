@@ -69,6 +69,11 @@ export interface ICategory {
   attributes: IAttribute[];
 }
 
+export type ProductAttribute = {
+  name: string;
+  value: boolean | string;
+};
+
 export type Product = {
   _id: string;
   name: string;
@@ -76,6 +81,8 @@ export type Product = {
   isPublish: boolean;
   description: string;
   category: ICategory;
+  priceConfiguration: IPriceConfiguration;
+  attributes: ProductAttribute[];
   createdAt: string;
 };
 
